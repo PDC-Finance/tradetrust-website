@@ -22,6 +22,7 @@ import { getSupportedChainIds, getUnsupportedChainIds } from "../common/utils/ch
 import { AvailableBlockChains, ChainId, ChainInfo } from "../constants/chain-info";
 import { IS_DEVELOPMENT } from "../config";
 import { ProcessedFiles } from "../types";
+import { isVerifiablePresentation } from "./presentation";
 
 const { TYPES } = errorMessages;
 
@@ -33,6 +34,12 @@ export const getOpenAttestationData = (
   wrappedDocument: WrappedOrSignedOpenAttestationDocument
 ): OpenAttestationDocument => {
   if (isSignedDocument(wrappedDocument) || vc.isRawDocument(wrappedDocument)) {
+    return wrappedDocument as any;
+  }
+  // A Verifiable Presentation is its own document data. Without this it falls through to
+  // OpenAttestation's getDocumentData, which THROWS on a presentation and takes every caller
+  // down with it (the expiry lookup in CertificateViewer among them).
+  if (isVerifiablePresentation(wrappedDocument)) {
     return wrappedDocument as any;
   }
   return getDocumentData(wrappedDocument);
@@ -82,6 +89,11 @@ export const getKeyId = (wrappedDocument: WrappedDocument<OpenAttestationDocumen
 export const getAttachments = (
   rawDocument: WrappedOrSignedOpenAttestationDocument | RawVerifiableCredential
 ): OpenAttestationAttachment[] | undefined => {
+  // A presentation carries no attachments of its own — each embedded credential carries its
+  // own, and is asked separately when its tab renders.
+  if (isVerifiablePresentation(rawDocument)) {
+    return [];
+  }
   if (isWrappedV2Document(rawDocument)) {
     const documentData = getDataV2(rawDocument);
     return documentData.attachments;
