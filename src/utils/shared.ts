@@ -16,9 +16,10 @@ import {
 } from "@trustvc/trustvc";
 import { TransferableRecordsCredentialStatus } from "@trustvc/trustvc/w3c/credential-status";
 import { CredentialSubject, isSignedDocument } from "@trustvc/trustvc/w3c/vc";
+import { providers } from "ethers";
 import { getCurrentProvider } from "../common/contexts/provider";
 import { getSupportedChainIds, getUnsupportedChainIds } from "../common/utils/chain-utils";
-import { AvailableBlockChains, ChainId } from "../constants/chain-info";
+import { AvailableBlockChains, ChainId, ChainInfo } from "../constants/chain-info";
 import { IS_DEVELOPMENT } from "../config";
 import { ProcessedFiles } from "../types";
 
@@ -137,7 +138,7 @@ export const getChainId = (
   const processOAChainId = (document: v2.OpenAttestationDocument | v3.OpenAttestationDocument): number | undefined => {
     const network = document.network;
     if (network) {
-      // Check for current blockchain identifier (ETH, POL, XDC, XRP, etc.) and chainId.
+      // Check for current blockchain, "ETH" or "POL", and chainId, if need cater for other blockchain and network, update this accordingly.
       if (!AvailableBlockChains.includes(network.chain as AvailableBlockChains) || !network.chainId) {
         throwError();
       }
@@ -164,9 +165,24 @@ export const getChainId = (
   }
 };
 
-export async function isTokenRegistryV4(registryAddress: string, tokenId: string): Promise<boolean> {
+/**
+ * RPC URL of the network the document was issued on, or undefined if it cannot be determined.
+ * Lets verification query the document's network without waiting for the app's provider to switch.
+ */
+export const getDocumentRpcUrl = (
+  rawDocument: WrappedOrSignedOpenAttestationDocument | SignedVerifiableCredential
+): string | undefined => {
   try {
-    const provider = getCurrentProvider();
+    const chainId = getChainId(rawDocument);
+    return chainId ? ChainInfo[chainId]?.rpcUrl : undefined;
+  } catch {
+    return undefined;
+  }
+};
+
+export async function isTokenRegistryV4(registryAddress: string, tokenId: string, rpcUrl?: string): Promise<boolean> {
+  try {
+    const provider = rpcUrl ? new providers.JsonRpcProvider(rpcUrl) : getCurrentProvider();
 
     if (!provider) {
       return false;

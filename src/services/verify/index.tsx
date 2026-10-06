@@ -10,6 +10,7 @@ import { getCurrentProvider } from "../../common/contexts/provider";
 import { getChainInfoFromNetworkName } from "../../common/utils/chain-utils";
 import { NETWORK_NAME } from "../../config";
 import { ChainInfo } from "../../constants/chain-info";
+import { getDocumentRpcUrl } from "../../utils/shared";
 
 export enum VerifierType {
   DEMO = "demo",
@@ -36,8 +37,11 @@ export const verifyDocument = async (
   document: DocumentsToVerify,
   verifierType = VerifierType.CUSTOM
 ): Promise<VerificationFragment[]> => {
-  const provider = getCurrentProvider();
-  return verifierType === VerifierType.DEMO
-    ? demoVerifier(document)
-    : verifyDoc(document, (await rpcURL(provider)) as string);
+  if (verifierType === VerifierType.DEMO) {
+    return demoVerifier(document);
+  }
+
+  const documentRpcUrl = getDocumentRpcUrl(document as any);
+  const rpc = documentRpcUrl || ((await rpcURL(getCurrentProvider())) as string);
+  return verifyDoc(document, rpc);
 };
