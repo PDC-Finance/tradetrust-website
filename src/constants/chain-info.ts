@@ -273,7 +273,6 @@ export const supportedMainnet = [
   ChainInfo[ChainId.XDC].networkName,
   ChainInfo[ChainId.Stability].networkName,
   ChainInfo[ChainId.Astron].networkName,
-  ChainInfo[ChainId.XRPLEVM].networkName,
 ];
 
 export const supportedTestnet = [
@@ -282,5 +281,4 @@ export const supportedTestnet = [
   ChainInfo[ChainId.APOTHEM].networkName,
   ChainInfo[ChainId.StabilityTestnet].networkName,
   ChainInfo[ChainId.AstronTestnet].networkName,
-  ChainInfo[ChainId.XRPLEVMTestnet].networkName,
 ];

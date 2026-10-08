@@ -52,9 +52,6 @@ export const useDeployTokenRegistry = (): useDeployTokenRegistryResult => {
         tDocDeployerAddress = v5ContractAddress.Deployer[networkId];
         implContractAddress = v5ContractAddress.TokenImplementation[networkId];
       }
-      if (!tDocDeployerAddress || !implContractAddress) {
-        throw new Error("Token registry deployment is not supported on this network.");
-      }
       const tDocDeployerV5 = new ethers.Contract(tDocDeployerAddress, v5Contracts.TDocDeployer__factory.abi, signer);
       const initParams = v5Utils.encodeInitParams({
         name,
@@ -62,7 +59,7 @@ export const useDeployTokenRegistry = (): useDeployTokenRegistryResult => {
         deployer: await signer.getAddress(),
       });
 
-      const gasStation = SUPPORTED_CHAINS[String(networkId) as CHAIN_ID]?.gasStation;
+      const { gasStation } = SUPPORTED_CHAINS[networkId as unknown as CHAIN_ID];
       let mintingReceipt;
       if (gasStation) {
         const feeData = await gasStation();

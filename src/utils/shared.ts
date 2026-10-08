@@ -177,10 +177,7 @@ export const getChainId = (
   }
 };
 
-/**
- * RPC URL of the network the document was issued on, or undefined if it cannot be determined.
- * Lets verification query the document's network without waiting for the app's provider to switch.
- */
+// RPC URL of the network the document was issued on, so verification does not depend on the app's current network
 export const getDocumentRpcUrl = (
   rawDocument: WrappedOrSignedOpenAttestationDocument | SignedVerifiableCredential
 ): string | undefined => {
