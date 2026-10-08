@@ -37,11 +37,8 @@ export const verifyDocument = async (
   document: DocumentsToVerify,
   verifierType = VerifierType.CUSTOM
 ): Promise<VerificationFragment[]> => {
-  if (verifierType === VerifierType.DEMO) {
-    return demoVerifier(document);
-  }
-
-  const documentRpcUrl = getDocumentRpcUrl(document as any);
-  const rpc = documentRpcUrl || ((await rpcURL(getCurrentProvider())) as string);
-  return verifyDoc(document, rpc);
+  const provider = getCurrentProvider();
+  return verifierType === VerifierType.DEMO
+    ? demoVerifier(document)
+    : verifyDoc(document, getDocumentRpcUrl(document as any) || ((await rpcURL(provider)) as string));
 };

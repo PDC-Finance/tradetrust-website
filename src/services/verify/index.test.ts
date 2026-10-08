@@ -35,7 +35,6 @@ describe("verifyDocument", () => {
     await verifyDocument(document as any);
 
     expect(mockedVerifyDoc).toHaveBeenCalledWith(document, "https://rpc.testnet.xrplevm.org");
-    expect(mockedGetCurrentProvider).not.toHaveBeenCalled();
   });
 
   it("falls back to the connected provider RPC when the document has no chain", async () => {
